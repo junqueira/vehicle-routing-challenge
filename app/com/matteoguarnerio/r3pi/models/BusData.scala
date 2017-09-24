@@ -1,8 +1,6 @@
 package com.matteoguarnerio.r3pi.models
 
-import org.joda.time.{DateTime, LocalDate, LocalTime}
-
-// TODO: HINT: only fuel sometimes present around 20
+import org.joda.time.DateTime
 
 case class BusData(
                   dongleId: String,
@@ -11,7 +9,7 @@ case class BusData(
                   driverPhoneId: Option[String],
                   eventTime: String,
                   lat: Double,
-                  long: Double,
+                  lon: Double,
                   eventId: String,
                   eventType: String,
                   speed: Option[Double],
@@ -27,18 +25,26 @@ case class BusData(
 
 }
 
+case class Coordinates(
+                      lat: Double,
+                      lon: Double
+                      )
 
-case class BusData2(
-                  dongleId: String,
-                  driverId: String,
-                  busId: String,
-                  eventTime: String,
-                  lat: Double,
-                  long: Double,
-                  eventId: String,
-                  eventType: String,
-                  speed: Double = Predef.Double2double(null)
-) {
-  val eventDateTime: DateTime = new DateTime(eventTime)
-  val eventLocalDate: LocalDate = new LocalDate(eventDateTime)
-}
+case class SpeedMetric(
+                      time: String,
+                      speed: Double
+                      )
+
+case class BusDataOutput(
+                        dongleId: String,
+                        driverId: String,
+                        busId: String,
+                        driverPhoneId: Option[String],
+                        tripStartTime: String,
+                        tripEndTime: String,
+                        handBrakes: Long,
+                        speeding: Seq[SpeedMetric],
+                        busStops: Seq[Coordinates],
+                        fuelConsumed: Option[Double],
+                        distanceCovered: Option[Double]
+                        )
