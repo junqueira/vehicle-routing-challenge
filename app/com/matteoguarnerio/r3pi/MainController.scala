@@ -2,9 +2,7 @@ package com.matteoguarnerio.r3pi
 
 import com.matteoguarnerio.r3pi.models.{BusDataOutput, Coordinates, SpeedMetric}
 import com.matteoguarnerio.r3pi.spark.SparkOperations
-import org.apache.spark.sql.DataFrame
 import play.api.mvc.{Action, AnyContent, Controller}
-import play.api.libs.json
 import play.api.libs.json.{Json, Writes}
 
 object MainController extends Controller {

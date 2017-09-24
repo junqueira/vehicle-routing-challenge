@@ -7,7 +7,7 @@ object SparkCommons {
   lazy val driverPort = 7777
   lazy val driverHost = "localhost"
 
-  lazy val conf = new SparkConf()
+  lazy val conf: SparkConf = new SparkConf()
     .setMaster("local[*]") // run locally with as many threads as CPUs
     .setAppName("R3PI - Assignment") // name in web UI
     .set("spark.driver.port", driverPort.toString)
@@ -15,7 +15,7 @@ object SparkCommons {
     .set("spark.local.dir", "tmpspark")
     .set("spark.logConf", "true")
 
-  lazy val sparkSession = SparkSession.builder
+  lazy val sparkSession: SparkSession = SparkSession.builder
     .config(conf = conf)
     .appName("Spark SQL session")
     .getOrCreate()

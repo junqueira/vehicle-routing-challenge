@@ -1,17 +1,13 @@
 package com.matteoguarnerio.r3pi.spark
 
 import com.matteoguarnerio.r3pi.SparkCommons
-import com.matteoguarnerio.r3pi.models._
+import com.matteoguarnerio.r3pi.models.{BusData, BusDataOutput, Coordinates, SpeedMetric}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types._
-
-import scala.collection.Map
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 
 object SparkOperations {
-
-  import SparkCommons.sparkSession.implicits._
 
   private val inputJsonPath: String = "resources/input/input.json"
 
@@ -38,14 +34,11 @@ object SparkOperations {
     .read
     .schema(schema)
     .json(inputJsonPath)
-    .cache()
 
-  // TODO: DEBUG: remove, only for debug
-  //inputDF.createOrReplaceTempView("input")
   inputDF.printSchema()
   println("Records: " + inputDF.count())
 
-  private val busDataRDD: RDD[(String, Iterable[BusData])] = inputDF.rdd
+  private val busDataRDD: RDD[(String, Seq[BusData])] = inputDF.rdd
     .map {
       case r: GenericRowWithSchema => {
           val dongleId = r.getAs("dongleId").asInstanceOf[String]
@@ -101,13 +94,60 @@ object SparkOperations {
     }
     .sortBy(_.eventTime)
     .groupBy(_.busId)
+//      .map {
+//        case (busId: String, busDatas) => {
+//          (busId, busDatas.toSeq)
+//        }
+//      }
+    // Calculate average speed for all the missing measurements
+    .map {
+      case (busId: String, busDatas) => {
+        val comparison: Iterable[(BusData, BusData)] =  busDatas zip busDatas.drop(1)
 
-  private val busDataMap: Map[String, Iterable[BusData]] = busDataRDD.collectAsMap()
+        val tmp: Seq[BusData] = comparison
+          .map(
+            c => {
+              val dist = distanceOnGeoid(c._1.lat, c._1.lon, c._2.lat, c._2.lon)
+              val timeDiff = (c._2.eventDateTime.getMillis - c._1.eventDateTime.getMillis) / 1000.0
+              val speedMps = dist / timeDiff
+              val speedKph: Double = (speedMps * 3600.0) / 1000.0
+
+              var speed: Option[Double] = c._1.speed
+              speed = c._1.speed match {
+                case Some(d) => c._1.speed
+                case None => if (!speedKph.isNaN) Option(speedKph) else None
+              }
+
+              BusData(
+                c._1.dongleId,
+                c._1.driverId,
+                c._1.busId,
+                c._1.driverPhoneId,
+                c._1.eventTime,
+                c._1.lat,
+                c._1.lon,
+                c._1.eventId,
+                c._1.eventType,
+                speed,
+                c._1.heading,
+                c._1.fuel,
+                c._1.mileage,
+                c._1.battery,
+                c._1.gForce,
+                c._1.speedChange
+              )
+            }
+          ).toSeq
+
+        (busId, tmp :+ busDatas.last)
+      }
+    }
+    .cache()
 
   val output: RDD[BusDataOutput] = busDataRDD
     .map {
       r => {
-        val busDatas: Iterable[BusData] = r._2
+        val busDatas = r._2
 
         val countTotHardBrakes: Long = busDatas.count(b => {
           val g: Double = b.gForce match {
@@ -117,27 +157,19 @@ object SparkOperations {
           g < -0.5F
         })
 
-        val speedingInstances: Seq[SpeedMetric] = busDatas.map(b => {
-          val s: Double = b.speed match {
-            case Some(v) => v
-            case None => -99999999
-          }
-          SpeedMetric(b.eventTime, s)
-        }).filter(_.speed != -99999999).toList.sortWith((l, r) => l.speed > r.speed)
+        val speedingInstances: Seq[SpeedMetric] = busDatas
+          .map(b => SpeedMetric(b.eventTime, b.speed))
+          .filter(b => b.speed.nonEmpty)
 
-        val busStops: Iterable[Coordinates] = busDatas.filter(b => {
-          val s: Double = b.speed match {
-            case Some(v) => v
-            case None => -99999999
-          }
-          s == 0
-        }).filter(_.speed != -99999999).map(b => Coordinates(b.lat, b.lon))
+        val busStops: Iterable[Coordinates] = busDatas
+          .filter( b => b.speed.nonEmpty && b.speed.head == 0)
+          .map(b => Coordinates(b.lat, b.lon))
 
-        val fuelDatas: Iterable[Double] = busDatas.flatMap(b => b.fuel)
+        val fuelDatas = busDatas.flatMap(b => b.fuel)
         var fuelConsumption: Option[Double] = None
         fuelConsumption = if (fuelDatas.nonEmpty) Some(fuelDatas.max - fuelDatas.min) else None
 
-        val mileageDatas: Iterable[Double] = busDatas.head.mileage ++ busDatas.last.mileage
+        val mileageDatas = busDatas.head.mileage ++ busDatas.last.mileage
         var distanceCovered: Option[Double] = None
         if (mileageDatas.nonEmpty) {
           distanceCovered = Some(mileageDatas.last - mileageDatas.head)
@@ -167,26 +199,26 @@ object SparkOperations {
 
   private def distanceOnGeoid(lat1d: Double, lon1d: Double, lat2d: Double, lon2d: Double): Double = {
     // Convert degrees to radians
-    val lat1 = lat1d * math.Pi / 180.0
-    val lon1 = lon1d * math.Pi / 180.0
-    val lat2 = lat2d * math.Pi / 180.0
-    val lon2 = lon2d * math.Pi / 180.0
+    val lat1: Double = lat1d * math.Pi / 180.0
+    val lon1: Double = lon1d * math.Pi / 180.0
+    val lat2: Double = lat2d * math.Pi / 180.0
+    val lon2: Double = lon2d * math.Pi / 180.0
     // Radius of Earth in metres
-    val r = 6378100
+    val r: Double = 6378100
     // P
-    val rho1 = r * math.cos(lat1)
-    val z1 = r * math.sin(lat1)
-    val x1 = rho1 * math.cos(lon1)
-    val y1 = rho1 * math.sin(lon1)
+    val rho1: Double = r * math.cos(lat1)
+    val z1: Double = r * math.sin(lat1)
+    val x1: Double = rho1 * math.cos(lon1)
+    val y1: Double = rho1 * math.sin(lon1)
     // Q
-    val rho2 = r * math.cos(lat2)
-    val z2 = r * math.sin(lat2)
-    val x2 = rho2 * math.cos(lon2)
-    val y2 = rho2 * math.sin(lon2)
+    val rho2: Double = r * math.cos(lat2)
+    val z2: Double = r * math.sin(lat2)
+    val x2: Double = rho2 * math.cos(lon2)
+    val y2: Double = rho2 * math.sin(lon2)
     // Dot product
-    val dot = x1 * x2 + y1 * y2 + z1 * z2
-    val cos_theta = dot / (r * r)
-    val theta = math.acos(cos_theta)
+    val dot: Double = x1 * x2 + y1 * y2 + z1 * z2
+    val cos_theta: Double = dot / (r * r)
+    val theta: Double = math.acos(cos_theta)
     // Distance in Metres
     r * theta
   }

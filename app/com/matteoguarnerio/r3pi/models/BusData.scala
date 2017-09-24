@@ -32,7 +32,7 @@ case class Coordinates(
 
 case class SpeedMetric(
                       time: String,
-                      speed: Double
+                      speed: Option[Double]
                       )
 
 case class BusDataOutput(
