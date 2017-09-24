@@ -1,0 +1,21 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+GET         /                       com.matteoguarnerio.r3pi.MainController.ready
+GET         /ping                   com.matteoguarnerio.r3pi.MainController.ping
+
+
+GET         /api/profitcenter       com.matteoguarnerio.r3pi.MainController.profitCenters
+GET         /api/attribute          com.matteoguarnerio.r3pi.MainController.attributes
+
+
+POST        /api/forecast           com.matteoguarnerio.r3pi.MainController.calculateProject
+POST        /api/forecast/tt        com.matteoguarnerio.r3pi.MainController.calculateProjectTT
+
+POST        /api/history            com.matteoguarnerio.r3pi.MainController.historyProject
+POST        /api/history/tt         com.matteoguarnerio.r3pi.MainController.historyProjectTT
+POST        /api/csv/history/tt     com.matteoguarnerio.r3pi.MainController.calculateCSVProjectTT
+
+
+OPTIONS     /*path                  com.matteoguarnerio.r3pi.MainController.dummyForOptions(path)
