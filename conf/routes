@@ -3,5 +3,6 @@
 # ~~~~
 
 GET         /                       com.matteoguarnerio.r3pi.MainController.trips
+GET         /trips                  com.matteoguarnerio.r3pi.MainController.trips
 
 OPTIONS     /*path                  com.matteoguarnerio.r3pi.MainController.dummyForOptions(path)
