@@ -2,7 +2,7 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET         /                       com.matteoguarnerio.r3pi.MainController.trips
-GET         /trips                  com.matteoguarnerio.r3pi.MainController.trips
+GET         /                   com.matteoguarnerio.MainController.trips
+GET         /trips              com.matteoguarnerio.MainController.trips
 
-OPTIONS     /*path                  com.matteoguarnerio.r3pi.MainController.dummyForOptions(path)
+OPTIONS     /*path              com.matteoguarnerio.MainController.dummyForOptions(path)

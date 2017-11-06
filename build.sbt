@@ -3,7 +3,7 @@ import play.sbt.PlayImport._
 scalaVersion := "2.11.11"
 lazy val sparkVersion = "2.0.2"
 
-name         := "r3pi-assignment"
+name         := "vehicle-routing-challenge"
 organization := "com.matteoguarnerio"
 version      := "0.0.1"
 

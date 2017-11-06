@@ -1,7 +1,7 @@
-package com.matteoguarnerio.r3pi.spark
+package com.matteoguarnerio.spark
 
-import com.matteoguarnerio.r3pi.SparkCommons
-import com.matteoguarnerio.r3pi.models.{BusData, BusDataOutput, Coordinates, SpeedMetric}
+import com.matteoguarnerio.SparkCommons
+import com.matteoguarnerio.models.{BusData, BusDataOutput, Coordinates, SpeedMetric}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.DataFrame

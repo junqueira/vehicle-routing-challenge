@@ -1,9 +1,9 @@
-package com.matteoguarnerio.r3pi
+package com.matteoguarnerio
 
-import com.matteoguarnerio.r3pi.models.{BusDataOutput, Coordinates, SpeedMetric}
-import com.matteoguarnerio.r3pi.spark.SparkOperations
-import play.api.mvc.{Action, AnyContent, Controller}
+import com.matteoguarnerio.models.{BusDataOutput, Coordinates, SpeedMetric}
+import com.matteoguarnerio.spark.SparkOperations
 import play.api.libs.json.{Json, Writes}
+import play.api.mvc.{Action, AnyContent, Controller}
 
 object MainController extends Controller {
 

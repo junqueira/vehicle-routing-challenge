@@ -1,4 +1,4 @@
-package com.matteoguarnerio.r3pi
+package com.matteoguarnerio
 
 import org.apache.spark.sql._
 import org.apache.spark.SparkConf

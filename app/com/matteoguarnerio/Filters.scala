@@ -1,4 +1,4 @@
-package com.matteoguarnerio.r3pi
+package com.matteoguarnerio
 
 import javax.inject.Inject
 

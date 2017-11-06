@@ -1,4 +1,4 @@
-package com.matteoguarnerio.r3pi.models
+package com.matteoguarnerio.models
 
 import org.joda.time.DateTime
 
