@@ -32,3 +32,25 @@ Your mission is to collect incoming bus dongle messages in JSON format from the 
 3. Keep track of all bus stops locations
 4. Fuel consumption in a trip
 5. Distance covered in a trip
+
+## Output (JSON)
+
+    {
+      "dongleId"               : [string] UUID: Unique device identifier,
+      "driverId"               : [string] UUID: Unique agent identifier,
+      "busId"                  : [string] UUID Unique vehicle identifier,
+      "driverPhoneId"          : [string] UUID: Phone identifier, // optional
+      "tripStartTime"          : [string] Trip start time and date in ISO 8601,
+      "tripEndTime"            : [string] Trip end time and date in ISO 8601,
+      "hardBrakes"             : [long] Total hard brakes,
+      "speeding"               : [{
+                                    "time"    : [string] Speeding time and date in ISO 8601,
+                                    "speed"   : [float] km/h
+                                 }],
+      "busStops"               : [{
+                                    "lat"     : [float] latitude,
+                                    "long"    : [float] longitude
+                                 }],
+      "fuelConsumed"           : [float] fuel percentage // optional
+    }
+
