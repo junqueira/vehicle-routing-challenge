@@ -5,16 +5,18 @@ import com.matteoguarnerio.spark.SparkOperations
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.{Action, AnyContent, Controller}
 
-object MainController extends Controller {
+
+//object
+class MainController extends Controller {
 
   def dummyForOptions(path: String): Action[AnyContent] = Action {
     Ok("")
   }
 
   def trips: Action[AnyContent] = Action {
-    Ok(
+    Ok {
       Json.toJson(SparkOperations.output.collect())
-    )
+    }
   }
 
   implicit val speedMetricWriter = new Writes[SpeedMetric] {
